@@ -108,7 +108,7 @@ class CNN(nn.Module):
                 self.conv_norm_layers.append(nn.BatchNorm2d(test_mat.shape[1]))
             if self.conv_normalization_type == 'layer':
                 self.conv_norm_layers.append(nn.LayerNorm(test_mat.shape[1:]))
-            if self.pool_type != 'none':
+            if self.pool_type != 'none' and len(self.pool_layers) > i:
                 test_mat = self.pool_layers[i](test_mat)
 
         self.conv_output_flat_size = int(np.prod(test_mat.shape))
@@ -179,7 +179,7 @@ class CNN(nn.Module):
             h = layer(h)
             if self.conv_normalization_type != 'none':
                 h = self.conv_norm_layers[i](h)
-            if self.pool_type != 'none':
+            if self.pool_type != 'none' and len(self.pool_layers) > i:
                 h = self.pool_layers[i](h)
             h = self.hidden_activation(h)
         return h
