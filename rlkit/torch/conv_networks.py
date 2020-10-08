@@ -85,13 +85,14 @@ class CNN(nn.Module):
             input_channels = out_channels
 
             if pool_type == 'max2d':
-                self.pool_layers.append(
-                    nn.MaxPool2d(
-                        kernel_size=pool_sizes[i],
-                        stride=pool_strides[i],
-                        padding=pool_paddings[i],
+                if pool_sizes[i] > 1:
+                    self.pool_layers.append(
+                        nn.MaxPool2d(
+                            kernel_size=pool_sizes[i],
+                            stride=pool_strides[i],
+                            padding=pool_paddings[i],
+                        )
                     )
-                )
 
         # use torch rather than ptu because initially the model is on CPU
         test_mat = torch.zeros(
