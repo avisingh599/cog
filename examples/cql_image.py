@@ -149,23 +149,22 @@ if __name__ == "__main__":
     )
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--env", type=str, default='Widow250DrawerGraspNeutral-v0')
+    parser.add_argument("--env", type=str, required=True)
     parser.add_argument("--buffer", type=str, default=DEFAULT_BUFFER)
-
     parser.add_argument("--gpu", default='0', type=str)
-    parser.add_argument("--max_q_backup", type=str,
+    parser.add_argument("--max-q-backup", type=str,
                         default="False")  # if we want to try max_{a'} backups, set this to true
-    parser.add_argument("--deterministic_backup", type=str,
+    parser.add_argument("--deterministic-backup", type=str,
                         default="True")  # defaults to true, it does not backup entropy in the Q-function, as per Equation 3
-    parser.add_argument("--policy_eval_start", default=10000,
+    parser.add_argument("--policy-eval-start", default=10000,
                         type=int)
-    parser.add_argument('--min_q_weight', default=5.0,
+    parser.add_argument('--min-q-weight', default=5.0,
                         type=float)  # the value of alpha, set to 5.0 or 10.0 if not using lagrange
-    parser.add_argument('--policy_lr', default=1e-4,
+    parser.add_argument('--policy-lr', default=1e-4,
                         type=float)  # Policy learning rate
-    parser.add_argument('--min_q_version', default=3,
+    parser.add_argument('--min-q-version', default=3,
                         type=int)  # min_q_version = 3 (CQL(H)), version = 2 (CQL(rho))
-    parser.add_argument('--lagrange_thresh', default=5.0,
+    parser.add_argument('--lagrange-thresh', default=5.0,
                         type=float)  # the value of tau, corresponds to the CQL(lagrange) version
     parser.add_argument('--seed', default=10, type=int)
 
