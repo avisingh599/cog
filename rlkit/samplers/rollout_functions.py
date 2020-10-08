@@ -109,7 +109,10 @@ def rollout(
     if render:
         env.render(**render_kwargs)
     while path_length < max_path_length:
-        a, agent_info = agent.get_action(o)
+        # a, agent_info = agent.get_action(o)
+        # TODO Remove hardcoding in the following line
+        a, agent_info = agent.get_action(o['image'])
+
         next_o, r, d, env_info = env.step(a)
         observations.append(o)
         rewards.append(r)

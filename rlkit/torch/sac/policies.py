@@ -43,6 +43,7 @@ class TanhGaussianPolicy(Mlp, ExplorationPolicy):
             action_dim,
             std=None,
             init_w=1e-3,
+            obs_processor=None,
             **kwargs
     ):
         super().__init__(
@@ -54,6 +55,8 @@ class TanhGaussianPolicy(Mlp, ExplorationPolicy):
         )
         self.log_std = None
         self.std = std
+        self.obs_processor = obs_processor
+
         if std is None:
             last_hidden_size = obs_dim
             if len(hidden_sizes) > 0:
@@ -74,7 +77,12 @@ class TanhGaussianPolicy(Mlp, ExplorationPolicy):
 
     def log_prob(self, obs, actions):
         raw_actions = atanh(actions)
-        h = obs
+
+        if self.obs_processor is None:
+            h = obs
+        else:
+            h = self.obs_processor(obs)
+
         for i, fc in enumerate(self.fcs):
             h = self.hidden_activation(fc(h))
         mean = self.last_fc(h)
@@ -103,7 +111,12 @@ class TanhGaussianPolicy(Mlp, ExplorationPolicy):
         :param deterministic: If True, do not sample
         :param return_log_prob: If True, return a sample and its log probability
         """
-        h = obs
+
+        if self.obs_processor is None:
+            h = obs
+        else:
+            h = self.obs_processor(obs)
+
         for i, fc in enumerate(self.fcs):
             h = self.hidden_activation(fc(h))
         mean = self.last_fc(h)
