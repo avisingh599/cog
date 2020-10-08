@@ -6,7 +6,56 @@ import numpy as np
 import scipy.misc
 import skvideo.io
 
-from rlkit.envs.vae_wrapper import VAEWrappedEnv
+from rlkit.core import logger
+
+
+class VideoSaveFunction:
+    def __init__(self, variant):
+        self.logdir = logger.get_snapshot_dir()
+        self.dump_video_kwargs = variant.get("dump_video_kwargs", dict())
+        self.save_period = self.dump_video_kwargs.pop('save_video_period', 50)
+
+    def __call__(self, algo, epoch):
+        if epoch % self.save_period == 0 or epoch == algo.num_epochs:
+            video_dir = osp.join(self.logdir,
+                                 'videos_eval/{epoch}/'.format(epoch=epoch))
+            eval_paths = algo.eval_data_collector.get_epoch_paths()
+            dump_video_basic(video_dir, eval_paths)
+
+
+def dump_video_basic(video_dir, paths):
+
+    if not os.path.exists(video_dir):
+        os.makedirs(video_dir)
+
+    import cv2
+    fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+
+    for i, path in enumerate(paths):
+        video = path['next_observations']
+        frame_list = []
+        for frame in video:
+            # TODO(avi) Figure out why this hack is needed
+            if isinstance(frame, np.ndarray):
+                frame_list.append(frame[0]['image'])
+            else:
+                frame_list.append(frame['image'])
+            # frame_list.append(frame)
+        frame_list = np.asarray(frame_list)
+        video_len = frame_list.shape[0]
+        n_channels = 3
+        imsize = int(np.sqrt(frame_list.shape[1] / n_channels))
+        assert imsize*imsize*n_channels == frame_list.shape[1]
+
+        video = frame_list.reshape(video_len, n_channels, imsize, imsize)
+        video = np.transpose(video, (0, 2, 3, 1))
+        video = (video*255.0).astype(np.uint8)
+        filename = osp.join(video_dir, '{}.mp4'.format(i))
+        FPS = float(np.ceil(video_len/3.0))
+        writer = cv2.VideoWriter(filename, fourcc, FPS, (imsize, imsize))
+        for j in range(video.shape[0]):
+            writer.write(cv2.cvtColor(video[j], cv2.COLOR_RGB2BGR))
+        writer = None
 
 
 def dump_video(
@@ -25,6 +74,7 @@ def dump_video(
         imsize=84,
         num_channels=3,
 ):
+    from rlkit.envs.vae_wrapper import VAEWrappedEnv
     frames = []
     H = 3 * imsize
     W = imsize

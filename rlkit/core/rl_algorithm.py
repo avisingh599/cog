@@ -58,13 +58,13 @@ class BaseRLAlgorithm(object, metaclass=abc.ABCMeta):
         #     gt.stamp('saving')
         self._log_stats(epoch)
 
+        for post_epoch_func in self.post_epoch_funcs:
+            post_epoch_func(self, epoch)
+
         self.expl_data_collector.end_epoch(epoch)
         self.eval_data_collector.end_epoch(epoch)
         self.replay_buffer.end_epoch(epoch)
         self.trainer.end_epoch(epoch)
-
-        for post_epoch_func in self.post_epoch_funcs:
-            post_epoch_func(self, epoch)
 
     def _get_snapshot(self):
         snapshot = {}

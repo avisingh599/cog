@@ -6,8 +6,9 @@ from rlkit.samplers.data_collector import MdpPathCollector, \
 from rlkit.torch.sac.policies import TanhGaussianPolicy, MakeDeterministic
 from rlkit.torch.sac.cql import CQLTrainer
 from rlkit.torch.conv_networks import CNN, ConcatCNN
-from rlkit.launchers.launcher_util import setup_logger
+from rlkit.launchers.launcher_util import run_experiment
 from rlkit.torch.torch_rl_algorithm import TorchBatchRLAlgorithm
+from rlkit.util.video import VideoSaveFunction
 
 import argparse, os
 import roboverse
@@ -15,6 +16,7 @@ import roboverse
 DEFAULT_BUFFER = ('/media/avi/data/Work/github/avisingh599/minibullet/data/'
                   'oct6_Widow250DrawerGraspNeutral-v0_20K_save_all_noise_0.1'
                   '_2020-10-06T19-37-26_19000.npy')
+NFS_PATH = '/nfs/kun1/users/avi/doodad-output/'
 
 
 def experiment(variant):
@@ -81,6 +83,9 @@ def experiment(variant):
         batch_rl=True,
         **variant['algorithm_kwargs']
     )
+    video_func = VideoSaveFunction(variant)
+    algorithm.post_epoch_funcs.append(video_func)
+
     algorithm.to(ptu.device)
     algorithm.train()
 
@@ -137,6 +142,10 @@ if __name__ == "__main__":
             max_q_backup=False,
             deterministic_backup=False,
         ),
+        dump_video_kwargs=dict(
+            imsize=48,
+            save_video_period=1,
+        ),
     )
 
     parser = argparse.ArgumentParser()
@@ -189,14 +198,22 @@ if __name__ == "__main__":
         image_augmentation_padding=4,
     )
 
-    # if args.lagrange_thresh < 0.0:
-    #     variant['trainer_kwargs']['with_lagrange'] = False
-
     variant['seed'] = args.seed
-
-    setup_logger('CQL-image-{}'.format(variant['env']),
-                 variant=variant,
-                 snapshot_mode='gap_and_last',
-                 snapshot_gap=10)
     ptu.set_gpu_mode(True)
-    experiment(variant)
+    exp_prefix = 'cql-private-{}'.format(args.env)
+
+    if os.path.isdir(NFS_PATH):
+        base_log_dir = NFS_PATH
+    else:
+        base_log_dir = None
+
+    run_experiment(
+        experiment,
+        base_log_dir=base_log_dir,
+        exp_prefix=exp_prefix,
+        mode='local',
+        variant=variant,
+        use_gpu=True,
+        snapshot_mode='gap_and_last',
+        snapshot_gap=10,
+    )
