@@ -31,6 +31,8 @@ class CNN(nn.Module):
             pool_sizes=None,
             pool_strides=None,
             pool_paddings=None,
+            image_augmentation=False,
+            image_augmentation_padding=4,
     ):
         if hidden_sizes is None:
             hidden_sizes = []
@@ -58,6 +60,8 @@ class CNN(nn.Module):
         self.conv_input_length = self.input_width * self.input_height * self.input_channels
         self.output_conv_channels = output_conv_channels
         self.pool_type = pool_type
+        self.image_augmentation = image_augmentation
+        self.image_augmentation_padding = image_augmentation_padding
 
         self.conv_layers = nn.ModuleList()
         self.conv_norm_layers = nn.ModuleList()
@@ -131,6 +135,10 @@ class CNN(nn.Module):
             self.last_fc.weight.data.uniform_(-init_w, init_w)
             self.last_fc.bias.data.uniform_(-init_w, init_w)
 
+        if self.image_augmentation:
+            self.augmentation_transform = RandomCrop(
+                input_height, self.image_augmentation_padding, device='cuda')
+
     def forward(self, input, return_last_activations=False):
         conv_input = input.narrow(start=0,
                                   length=self.conv_input_length,
@@ -140,6 +148,10 @@ class CNN(nn.Module):
                             self.input_channels,
                             self.input_height,
                             self.input_width)
+
+        if h.shape[0] > 1 and self.image_augmentation:
+            # h.shape[0] > 1 ensures we apply this only during training
+            h = self.augmentation_transform(h)
 
         h = self.apply_forward_conv(h)
 
@@ -321,3 +333,59 @@ class TwoHeadDCNN(nn.Module):
 class DCNN(TwoHeadDCNN):
     def forward(self, x):
         return super().forward(x)[0]
+
+
+class RandomCrop:
+    """
+    Source: # https://github.com/pratogab/batch-transforms
+    Applies the :class:`~torchvision.transforms.RandomCrop` transform to
+    a batch of images.
+    Args:
+        size (int): Desired output size of the crop.
+        padding (int, optional): Optional padding on each border of the image.
+            Default is None, i.e no padding.
+        dtype (torch.dtype,optional): The data type of tensors to which the transform will be applied.
+        device (torch.device,optional): The device of tensors to which the transform will be applied.
+    """
+
+    def __init__(self, size, padding=None, dtype=torch.float, device='cpu'):
+        self.size = size
+        self.padding = padding
+        self.dtype = dtype
+        self.device = device
+
+    def __call__(self, tensor):
+        """
+        Args:
+            tensor (Tensor): Tensor of size (N, C, H, W) to be cropped.
+        Returns:
+            Tensor: Randomly cropped Tensor.
+        """
+        if self.padding is not None:
+            padded = torch.zeros((tensor.size(0), tensor.size(1),
+                                  tensor.size(2) + self.padding * 2,
+                                  tensor.size(3) + self.padding * 2),
+                                 dtype=self.dtype, device=self.device)
+            padded[:, :, self.padding:-self.padding,
+            self.padding:-self.padding] = tensor
+        else:
+            padded = tensor
+
+        w, h = padded.size(2), padded.size(3)
+        th, tw = self.size, self.size
+        if w == tw and h == th:
+            i, j = 0, 0
+        else:
+            i = torch.randint(0, h - th + 1, (tensor.size(0),),
+                              device=self.device)
+            j = torch.randint(0, w - tw + 1, (tensor.size(0),),
+                              device=self.device)
+
+        rows = torch.arange(th, dtype=torch.long, device=self.device) + i[:,
+                                                                        None]
+        columns = torch.arange(tw, dtype=torch.long, device=self.device) + j[:,
+                                                                           None]
+        padded = padded.permute(1, 0, 2, 3)
+        padded = padded[:, torch.arange(tensor.size(0))[:, None, None],
+                 rows[:, torch.arange(th)[:, None]], columns[:, None]]
+        return padded.permute(1, 0, 2, 3)

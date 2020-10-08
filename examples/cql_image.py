@@ -104,11 +104,11 @@ if __name__ == "__main__":
             # min_num_steps_before_training=100,
             # max_path_length=10,
             num_epochs=3000,
-            num_eval_steps_per_epoch=1000,
+            num_eval_steps_per_epoch=300,
             num_trains_per_train_loop=1000,
             num_expl_steps_per_train_loop=1000,
             min_num_steps_before_training=1000,
-            max_path_length=1000,
+            max_path_length=30,
             batch_size=256,
         ),
         trainer_kwargs=dict(
@@ -185,6 +185,8 @@ if __name__ == "__main__":
         pool_sizes=[2, 2, 1],  # the one at the end means no pool
         pool_strides=[2, 2, 1],
         pool_paddings=[0, 0, 0],
+        image_augmentation=True,
+        image_augmentation_padding=4,
     )
 
     # if args.lagrange_thresh < 0.0:
@@ -192,6 +194,9 @@ if __name__ == "__main__":
 
     variant['seed'] = args.seed
 
-    setup_logger('CQL-image-{}'.format(variant['env']), variant=variant)
+    setup_logger('CQL-image-{}'.format(variant['env']),
+                 variant=variant,
+                 snapshot_mode='gap_and_last',
+                 snapshot_gap=10)
     ptu.set_gpu_mode(True)
     experiment(variant)
