@@ -154,6 +154,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--env", type=str, required=True)
+    parser.add_argument("--max-path-length", type=int, required=True)
     parser.add_argument("--prior-buffer", type=str, default=DEFAULT_PRIOR_BUFFER)
     parser.add_argument("--task-buffer", type=str, default=DEFAULT_TASK_BUFFER)
     parser.add_argument("--gpu", default='0', type=str)
@@ -176,6 +177,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     enable_gpus(args.gpu)
     variant['env'] = args.env
+    variant['algorithm_kwargs']['max_path_length'] = args.max_path_length
     variant['prior_buffer'] = args.prior_buffer
     variant['task_buffer'] = args.task_buffer
 

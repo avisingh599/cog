@@ -15,7 +15,7 @@ import roboverse
 
 DEFAULT_BUFFER = ('/media/avi/data/Work/github/avisingh599/minibullet/data/'
                   'oct6_Widow250DrawerGraspNeutral-v0_20K_save_all_noise_0.1'
-                  '_2020-10-06T19-37-26_19000.npy')
+                  '_2020-10-06T19-37-26_100.npy')
 NFS_PATH = '/nfs/kun1/users/avi/doodad-output/'
 
 
@@ -150,6 +150,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--env", type=str, required=True)
+    parser.add_argument("--max-path-length", type=int, required=True)
     parser.add_argument("--buffer", type=str, default=DEFAULT_BUFFER)
     parser.add_argument("--gpu", default='0', type=str)
     parser.add_argument("--max-q-backup", type=str,
@@ -158,7 +159,7 @@ if __name__ == "__main__":
                         default="True")  # defaults to true, it does not backup entropy in the Q-function, as per Equation 3
     parser.add_argument("--policy-eval-start", default=10000,
                         type=int)
-    parser.add_argument('--min-q-weight', default=5.0,
+    parser.add_argument('--min-q-weight', default=1.0,
                         type=float)  # the value of alpha, set to 5.0 or 10.0 if not using lagrange
     parser.add_argument('--policy-lr', default=1e-4,
                         type=float)  # Policy learning rate
@@ -171,6 +172,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     enable_gpus(args.gpu)
     variant['env'] = args.env
+    variant['algorithm_kwargs']['max_path_length'] = args.max_path_length
     variant['buffer'] = args.buffer
 
     variant['trainer_kwargs']['max_q_backup'] = (
