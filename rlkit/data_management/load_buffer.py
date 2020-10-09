@@ -2,24 +2,18 @@ import numpy as np
 from rlkit.data_management.obs_dict_replay_buffer import \
     ObsDictReplayBuffer
 
+# TODO Clean up this file
 
-# TODO (avi) Clean up
-def load_data_from_npy(variant, expl_env, observation_key,
-                       extra_buffer_size=100):
-    with open(variant['buffer'], 'rb') as f:
-        data = np.load(f, allow_pickle=True)
 
+def get_buffer_size(data):
     num_transitions = 0
     for i in range(len(data)):
         for j in range(len(data[i]['observations'])):
             num_transitions += 1
-    buffer_size = num_transitions + extra_buffer_size
+    return num_transitions
 
-    replay_buffer = ObsDictReplayBuffer(
-        buffer_size,
-        expl_env,
-        observation_key=observation_key,
-    )
+
+def add_data_to_buffer(data, replay_buffer):
 
     for j in range(len(data)):
         assert (len(data[j]['actions']) == len(data[j]['observations']) == len(
@@ -34,11 +28,54 @@ def load_data_from_npy(variant, expl_env, observation_key,
                 data[j]['next_observations']),
         )
         replay_buffer.add_path(path)
+
+
+def load_data_from_npy(variant, expl_env, observation_key,
+                       extra_buffer_size=100):
+    with open(variant['buffer'], 'rb') as f:
+        data = np.load(f, allow_pickle=True)
+
+    num_transitions = get_buffer_size(data)
+    buffer_size = num_transitions + extra_buffer_size
+
+    replay_buffer = ObsDictReplayBuffer(
+        buffer_size,
+        expl_env,
+        observation_key=observation_key,
+    )
+    add_data_to_buffer(data, replay_buffer)
     print('Data loaded from npy file', replay_buffer._top)
     return replay_buffer
 
 
-# TODO (avi) Clean up
+def load_data_from_npy_chaining(variant, expl_env, observation_key,
+                                extra_buffer_size=100):
+    with open(variant['prior_buffer'], 'rb') as f:
+        data_prior = np.load(f, allow_pickle=True)
+    with open(variant['task_buffer'], 'rb') as f:
+        data_task = np.load(f, allow_pickle=True)
+
+    buffer_size = get_buffer_size(data_prior)
+    buffer_size += get_buffer_size(data_task)
+    buffer_size += extra_buffer_size
+
+    replay_buffer = ObsDictReplayBuffer(
+        buffer_size,
+        expl_env,
+        observation_key=observation_key,
+    )
+
+    add_data_to_buffer(data_prior, replay_buffer)
+    top = replay_buffer._top
+    print('Prior data loaded from npy file', top)
+    replay_buffer._rewards[:top] = 0.0*replay_buffer._rewards[:top]
+    print('Zero-ed the rewards for prior data', top)
+
+    add_data_to_buffer(data_task, replay_buffer)
+    print('Task data loaded from npy file', replay_buffer._top)
+    return replay_buffer
+
+
 def process_images(observations):
     output = []
     for i in range(len(observations)):
@@ -46,11 +83,6 @@ def process_images(observations):
         if len(image.shape) == 3:
             image = np.transpose(image, [2, 0, 1])
             image = (image.flatten())/255.0
-        # elif len(image.shape) == 1:
-        #     assert 48*48*3 == image.shape[0]
-        #     image = np.reshape(image, (48, 48, 3))
-        #     image = np.transpose(image, [2, 0, 1])
-        #     image = image.flatten()
         else:
             print('image shape: {}'.format(image.shape))
             raise ValueError
