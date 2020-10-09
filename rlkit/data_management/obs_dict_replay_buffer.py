@@ -434,6 +434,10 @@ class ObsDictReplayBuffer(ReplayBuffer):
         obs = self._obs[self.observation_key][indices]
         next_obs = self._next_obs[self.observation_key][indices]
 
+        if self.observation_key == 'image':
+            obs = normalize_image(obs)
+            next_obs = normalize_image(next_obs)
+
         batch = {}
         batch.update({
             'observations': obs,
