@@ -167,12 +167,16 @@ if __name__ == "__main__":
                         type=int)  # min_q_version = 3 (CQL(H)), version = 2 (CQL(rho))
     parser.add_argument('--lagrange-thresh', default=5.0,
                         type=float)  # the value of tau, corresponds to the CQL(lagrange) version
+    parser.add_argument('--num-eval-per-epoch', type=int, default=5)
     parser.add_argument('--seed', default=10, type=int)
 
     args = parser.parse_args()
     enable_gpus(args.gpu)
     variant['env'] = args.env
     variant['algorithm_kwargs']['max_path_length'] = args.max_path_length
+    variant['algorithm_kwargs']['num_eval_steps_per_epoch'] = \
+        args.num_eval_per_epoch*args.max_path_length
+
     variant['buffer'] = args.buffer
 
     variant['trainer_kwargs']['max_q_backup'] = (
