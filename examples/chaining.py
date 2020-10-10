@@ -207,7 +207,7 @@ if __name__ == "__main__":
 
     variant['seed'] = args.seed
     ptu.set_gpu_mode(True)
-    exp_prefix = 'cql-private-{}'.format(args.env)
+    exp_prefix = 'cql-private-chaining-{}'.format(args.env)
 
     if os.path.isdir(NFS_PATH):
         base_log_dir = NFS_PATH
