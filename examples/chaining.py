@@ -12,6 +12,7 @@ from rlkit.util.video import VideoSaveFunction
 
 import argparse, os
 import roboverse
+import numpy as np
 
 DEFAULT_PRIOR_BUFFER = ('/media/avi/data/Work/github/avisingh599/minibullet'
                         '/data/oct6_Widow250DrawerGraspNeutral-v0_20K_save_all'
@@ -66,6 +67,14 @@ def experiment(variant):
     observation_key = 'image'
     replay_buffer = load_data_from_npy_chaining(
         variant, expl_env, observation_key)
+
+    # Translate 0/1 rewards to +4/+10 rewards.
+    if variant['use_positive_rew']:
+        if set(np.unique(replay_buffer._rewards)).issubset({0, 1}):
+            replay_buffer._rewards = replay_buffer._rewards * 6.0
+            replay_buffer._rewards = replay_buffer._rewards + 4.0
+        assert set(np.unique(replay_buffer._rewards)).issubset(
+            set(6.0 * np.array([0, 1]) + 4.0))
 
     trainer = CQLTrainer(
         env=eval_env,
@@ -139,12 +148,25 @@ if __name__ == "__main__":
 
             # lagrange
             with_lagrange=False,  # Defaults to False
-            lagrange_thresh=10.0,
+            lagrange_thresh=5.0,
 
             # extra params
             num_random=1,
             max_q_backup=False,
             deterministic_backup=False,
+        ),
+        cnn_params=dict(
+            kernel_sizes=[3, 3, 3],
+            n_channels=[16, 16, 16],
+            strides=[1, 1, 1],
+            hidden_sizes=[1024, 512, 256],
+            paddings=[1, 1, 1],
+            pool_type='max2d',
+            pool_sizes=[2, 2, 1],  # the one at the end means no pool
+            pool_strides=[2, 2, 1],
+            pool_paddings=[0, 0, 0],
+            image_augmentation=True,
+            image_augmentation_padding=4,
         ),
         dump_video_kwargs=dict(
             imsize=48,
@@ -158,22 +180,25 @@ if __name__ == "__main__":
     parser.add_argument("--prior-buffer", type=str, default=DEFAULT_PRIOR_BUFFER)
     parser.add_argument("--task-buffer", type=str, default=DEFAULT_TASK_BUFFER)
     parser.add_argument("--gpu", default='0', type=str)
-    parser.add_argument("--max-q-backup", type=str,
-                        default="False")  # if we want to try max_{a'} backups, set this to true
-    parser.add_argument("--deterministic-backup", type=str,
-                        default="True")  # defaults to true, it does not backup entropy in the Q-function, as per Equation 3
+    parser.add_argument("--min-q-weight", default=1.0, type=float,
+                        help="Value of alpha in CQL")
+    parser.add_argument("--use-lagrange", action="store_true", default=False)
+    parser.add_argument("--lagrange-thresh", default=5.0, type=float,
+                        help="Value of tau, used with --use-lagrange")
+    parser.add_argument("--use-positive-rew", action="store_true", default=False)
+    parser.add_argument("--max-q-backup", action="store_true", default=False,
+                        help="For max_{a'} backups, set this to true")
+    parser.add_argument("--no-deterministic-backup", action="store_true",
+                        default=False,
+                        help="By default, deterministic backup is used")
     parser.add_argument("--policy-eval-start", default=10000,
                         type=int)
-    parser.add_argument('--min-q-weight', default=1.0,
-                        type=float)  # the value of alpha, set to 5.0 or 10.0 if not using lagrange
-    parser.add_argument('--policy-lr', default=1e-4,
-                        type=float)  # Policy learning rate
-    parser.add_argument('--min-q-version', default=3,
-                        type=int)  # min_q_version = 3 (CQL(H)), version = 2 (CQL(rho))
-    parser.add_argument('--lagrange-thresh', default=5.0,
-                        type=float)  # the value of tau, corresponds to the CQL(lagrange) version
-    parser.add_argument('--num-eval-per-epoch', type=int, default=5)
-    parser.add_argument('--seed', default=10, type=int)
+    parser.add_argument("--policy-lr", default=1e-4, type=float)
+    parser.add_argument("--min-q-version", default=3, type=int,
+                        help=("min_q_version = 3 (CQL(H)), "
+                              "version = 2 (CQL(rho))"))
+    parser.add_argument("--num-eval-per-epoch", type=int, default=5)
+    parser.add_argument("--seed", default=10, type=int)
 
     args = parser.parse_args()
     enable_gpus(args.gpu)
@@ -185,34 +210,22 @@ if __name__ == "__main__":
     variant['prior_buffer'] = args.prior_buffer
     variant['task_buffer'] = args.task_buffer
 
-    variant['trainer_kwargs']['max_q_backup'] = (
-        True if args.max_q_backup == 'True' else False)
-    variant['trainer_kwargs']['deterministic_backup'] = (
-        True if args.deterministic_backup == 'True' else False)
+    variant['trainer_kwargs']['max_q_backup'] = args.max_q_backup
+    variant['trainer_kwargs']['deterministic_backup'] = \
+        not args.no_deterministic_backup
     variant['trainer_kwargs']['min_q_weight'] = args.min_q_weight
     variant['trainer_kwargs']['policy_lr'] = args.policy_lr
     variant['trainer_kwargs']['min_q_version'] = args.min_q_version
     variant['trainer_kwargs']['policy_eval_start'] = args.policy_eval_start
     variant['trainer_kwargs']['lagrange_thresh'] = args.lagrange_thresh
+    variant['trainer_kwargs']['with_lagrange'] = args.use_lagrange
 
-    variant['cnn_params'] = dict(
-        kernel_sizes=[3, 3, 3],
-        n_channels=[16, 16, 16],
-        strides=[1, 1, 1],
-        hidden_sizes=[1024, 512, 256],
-        paddings=[1, 1, 1],
-        pool_type='max2d',
-        pool_sizes=[2, 2, 1],  # the one at the end means no pool
-        pool_strides=[2, 2, 1],
-        pool_paddings=[0, 0, 0],
-        image_augmentation=True,
-        image_augmentation_padding=4,
-    )
-
+    # Translate 0/1 rewards to +4/+10 rewards.
+    variant['use_positive_rew'] = args.use_positive_rew
     variant['seed'] = args.seed
+
     ptu.set_gpu_mode(True)
     exp_prefix = 'cql-private-chaining-{}'.format(args.env)
-
     if os.path.isdir(NFS_PATH):
         base_log_dir = NFS_PATH
     else:
