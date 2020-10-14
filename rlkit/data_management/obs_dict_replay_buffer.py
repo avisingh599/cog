@@ -354,6 +354,32 @@ class ObsDictReplayBuffer(ReplayBuffer):
     def num_steps_can_sample(self):
         return self._size
 
+    def add_paths_from_mdp(self, paths):
+        for path in paths:
+            self.add_path_from_mdp(path)
+
+    # TODO This function is a temp hack,
+    # it should be removed after changes to MdpPathCollector
+    def add_path_from_mdp(self, path):
+        obs = path["observations"]
+        actions = path["actions"]
+        rewards = path["rewards"]
+        next_obs = path["next_observations"]
+        terminals = path["terminals"]
+        path_len = len(rewards)
+
+        # this gets rid of size 1 np arrays
+        obs = [obs_[0] for obs_ in obs]
+        next_obs = [next_obs_[0] for next_obs_ in next_obs]
+
+        obs = flatten_dict(list(obs), self.ob_keys_to_save + self.internal_keys)
+        next_obs = flatten_dict(list(next_obs),
+                                self.ob_keys_to_save + self.internal_keys)
+        obs = preprocess_obs_dict(obs)
+        next_obs = preprocess_obs_dict(next_obs)
+        self.add_processed_path(path_len, actions, terminals,
+                                obs, next_obs, rewards)
+
     def add_path(self, path):
         obs = path["observations"]
         actions = path["actions"]
@@ -369,6 +395,12 @@ class ObsDictReplayBuffer(ReplayBuffer):
                                 self.ob_keys_to_save + self.internal_keys)
         obs = preprocess_obs_dict(obs)
         next_obs = preprocess_obs_dict(next_obs)
+
+        self.add_processed_path(path_len, actions, terminals,
+                                obs, next_obs, rewards)
+
+    def add_processed_path(self, path_len, actions, terminals,
+                           obs, next_obs, rewards):
 
         if self._top + path_len >= self.max_size:
             num_pre_wrap_steps = self.max_size - self._top

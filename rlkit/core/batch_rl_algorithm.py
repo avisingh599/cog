@@ -17,12 +17,14 @@ from rlkit.torch.core import np_to_pytorch_batch
 
 import torch
 
+
 def get_flat_params(model):
     params = []
     for param in model.parameters():
         # import ipdb; ipdb.set_trace()
         params.append(param.data.cpu().numpy().reshape(-1))
     return np.concatenate(params)
+
 
 def set_flat_params(model, flat_params, trainable_only=True):
     idx = 0
@@ -37,6 +39,7 @@ def set_flat_params(model, flat_params, trainable_only=True):
             p.data = ptu.tensor(flat_params_to_assign[0])
         idx += flat_shape  
     return model
+
 
 class BatchRLAlgorithm(BaseRLAlgorithm, metaclass=abc.ABCMeta):
     def __init__(
@@ -104,7 +107,6 @@ class BatchRLAlgorithm(BaseRLAlgorithm, metaclass=abc.ABCMeta):
         ones = np.eye(q_vector.shape[1])
         return ptu.get_numpy(action).flatten()
 
-
     def _train(self):
         if self.min_num_steps_before_training > 0 and not self.batch_rl:
             init_expl_paths = self.expl_data_collector.collect_new_paths(
@@ -112,7 +114,9 @@ class BatchRLAlgorithm(BaseRLAlgorithm, metaclass=abc.ABCMeta):
                 self.min_num_steps_before_training,
                 discard_incomplete_paths=False,
             )
-            self.replay_buffer.add_paths(init_expl_paths)
+            # TODO add_paths_from_mdp is a temporary hack, need to expand
+            # MdpPathCollector to output paths in the correct format instead
+            self.replay_buffer.add_paths_from_mdp(init_expl_paths)
             self.expl_data_collector.end_epoch(-1)
 
         for epoch in gt.timed_for(
@@ -147,7 +151,9 @@ class BatchRLAlgorithm(BaseRLAlgorithm, metaclass=abc.ABCMeta):
                     )
                     gt.stamp('exploration sampling', unique=False)
 
-                    self.replay_buffer.add_paths(new_expl_paths)
+                    # TODO add_paths_from_mdp is a temporary hack
+                    self.replay_buffer.add_paths_from_mdp(new_expl_paths)
+
                     gt.stamp('data storing', unique=False)
                 elif self.eval_both:
                     # Now evaluate the policy here:
