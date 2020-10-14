@@ -241,17 +241,8 @@ class CQLTrainer(TorchTrainer):
         q1_next_actions = self._get_tensor_values(obs, new_curr_actions_tensor, network=self.qf1)
         q2_next_actions = self._get_tensor_values(obs, new_curr_actions_tensor, network=self.qf2)
 
-        cat_q1 = torch.cat(
-            [q1_rand, q1_pred.unsqueeze(1), q1_next_actions, q1_curr_actions], 1
-        )
-        cat_q2 = torch.cat(
-            [q2_rand, q2_pred.unsqueeze(1), q2_next_actions, q2_curr_actions], 1
-        )
-        std_q1 = torch.std(cat_q1, dim=1)
-        std_q2 = torch.std(cat_q2, dim=1)
-
         if self.min_q_version == 3:
-            # importance sammpled version
+            # importance sampled version
             random_density = np.log(0.5 ** curr_actions_tensor.shape[-1])
             cat_q1 = torch.cat(
                 [q1_rand - random_density, q1_next_actions - new_log_pis.detach(), q1_curr_actions - curr_log_pis.detach()], 1
@@ -259,6 +250,18 @@ class CQLTrainer(TorchTrainer):
             cat_q2 = torch.cat(
                 [q2_rand - random_density, q2_next_actions - new_log_pis.detach(), q2_curr_actions - curr_log_pis.detach()], 1
             )
+        else:
+            cat_q1 = torch.cat(
+                [q1_rand, q1_pred.unsqueeze(1), q1_next_actions,
+                 q1_curr_actions], 1
+            )
+            cat_q2 = torch.cat(
+                [q2_rand, q2_pred.unsqueeze(1), q2_next_actions,
+                 q2_curr_actions], 1
+            )
+
+        std_q1 = torch.std(cat_q1, dim=1)
+        std_q2 = torch.std(cat_q2, dim=1)
             
         min_qf1_loss = torch.logsumexp(cat_q1 / self.temp, dim=1,).mean() * self.min_q_weight * self.temp
         min_qf2_loss = torch.logsumexp(cat_q2 / self.temp, dim=1,).mean() * self.min_q_weight * self.temp
@@ -278,7 +281,8 @@ class CQLTrainer(TorchTrainer):
             self.alpha_prime_optimizer.step()
 
         qf1_loss = qf1_loss + min_qf1_loss
-        qf2_loss = qf2_loss + min_qf2_loss
+        if self.num_qs > 1:
+            qf2_loss = qf2_loss + min_qf2_loss
 
         """
         Update networks
