@@ -4,7 +4,7 @@ from rlkit.samplers.data_collector import MdpPathCollector, \
     CustomMDPPathCollector
 
 from rlkit.torch.sac.policies import TanhGaussianPolicy, MakeDeterministic
-from rlkit.torch.sac.cql import CQLTrainer
+from rlkit.torch.sac.bc import BCTrainer
 from rlkit.torch.conv_networks import CNN, ConcatCNN
 from rlkit.launchers.launcher_util import run_experiment
 from rlkit.torch.torch_rl_algorithm import TorchBatchRLAlgorithm
@@ -66,7 +66,7 @@ def experiment(variant):
     replay_buffer = load_data_from_npy_chaining(
         variant, expl_env, observation_key)
 
-    trainer = CQLTrainer(
+    trainer = BCTrainer(
         env=eval_env,
         policy=policy,
         qf1=qf1,
