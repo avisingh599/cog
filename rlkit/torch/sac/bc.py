@@ -64,7 +64,7 @@ class BCTrainer(TorchTrainer):
             # Automatic minq tuning
             with_lagrange=False,
             lagrange_thresh=5.0,
-            use_robot_state=True,
+            use_robot_state=False,
             observation_keys=("observations",),
     ):
         super().__init__()
@@ -266,7 +266,8 @@ class BCTrainer(TorchTrainer):
                 obs, reparameterize=True, return_log_prob=True,
             )
             alpha = 0.0
-            policy_log_prob = self.policy.log_prob_aviral(obs, actions)
+            # policy_log_prob = self.policy.log_prob_aviral(obs, actions)
+            policy_log_prob = self.policy.log_prob(obs, actions)
             policy_loss = (alpha * log_pi - policy_log_prob).mean()
             # print ('Policy Loss: ', policy_loss.item())
         """
