@@ -533,7 +533,7 @@ def run_experiment(
                 "convert {} into a nested dictionary?".format(key)
             )
     if prepend_date_to_exp_prefix:
-        exp_prefix = time.strftime("%m-%d") + "-" + exp_prefix
+        exp_prefix = time.strftime("%y-%m-%d") + "-" + exp_prefix
     variant['seed'] = str(seed)
     variant['exp_id'] = str(exp_id)
     variant['exp_prefix'] = str(exp_prefix)
