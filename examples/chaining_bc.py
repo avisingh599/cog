@@ -53,7 +53,11 @@ def experiment(variant):
         obs_processor=policy_obs_processor,
     )
 
-    eval_policy = MakeDeterministic(policy)
+    if variant['stoch_eval_policy']:
+        eval_policy = policy
+    else:
+        eval_policy = MakeDeterministic(policy)
+
     eval_path_collector = MdpPathCollector(
         eval_env,
         eval_policy,
@@ -172,6 +176,7 @@ if __name__ == "__main__":
     # parser.add_argument('--lagrange-thresh', default=5.0,
     #                     type=float)  # the value of tau, corresponds to the CQL(lagrange) version
     parser.add_argument('--num-eval-per-epoch', type=int, default=5)
+    parser.add_argument("--stoch-eval-policy", action="store_true", default=False)
     parser.add_argument('--seed', default=10, type=int)
 
     args = parser.parse_args()
@@ -208,9 +213,10 @@ if __name__ == "__main__":
         image_augmentation_padding=4,
     )
 
+    variant['stoch_eval_policy'] = args.stoch_eval_policy
     variant['seed'] = args.seed
     ptu.set_gpu_mode(True)
-    exp_prefix = 'cql-private-chaining-{}'.format(args.env)
+    exp_prefix = 'cql-private-BC-{}'.format(args.env)
 
     run_experiment(
         experiment,
@@ -220,4 +226,5 @@ if __name__ == "__main__":
         use_gpu=True,
         snapshot_mode='gap_and_last',
         snapshot_gap=10,
+        seed=args.seed,
     )
