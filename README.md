@@ -9,6 +9,7 @@ Our code is built off of [CQL](https://github.com/aviralkumar2907/CQL).
 - [ ] Add setup instructions. 
 
 ### Soon
+- [ ] Fix OpenCV/ffmpeg video saving warning
 - [ ] Clean up `rlkit/data_management/load_buffer.py`
 - [ ] `ObsDictReplayBuffer` and `ObsDictRelabelingBuffer` share a lot of code, but are currently implemented independently.
 - [ ] Hard-coded `.cuda()` in line 234 in `rlkit/torch/sac/cql.py`

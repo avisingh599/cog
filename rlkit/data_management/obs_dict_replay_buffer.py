@@ -504,6 +504,9 @@ class ObsDictReplayBuffer(ReplayBuffer):
             new_dict[key] = obs_dict[key][slc]
         return new_dict
 
+    def get_diagnostics(self):
+        return {'top': self._top}
+
 
 def flatten_n(xs):
     xs = np.asarray(xs)
