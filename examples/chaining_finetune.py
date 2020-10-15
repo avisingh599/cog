@@ -11,6 +11,7 @@ from rlkit.data_management.load_buffer import load_data_from_npy_chaining
 from rlkit.launchers.launcher_util import run_experiment
 from rlkit.samplers.data_collector import MdpPathCollector
 from rlkit.torch.sac.cql import CQLTrainer
+from rlkit.torch.sac.sac import SACTrainer
 from rlkit.torch.sac.policies import TanhGaussianPolicy, MakeDeterministic
 from rlkit.torch.torch_rl_algorithm import TorchBatchRLAlgorithm
 from rlkit.util.video import VideoSaveFunction
@@ -71,15 +72,33 @@ def experiment(variant):
             variant, expl_env, observation_key,
             extra_buffer_size=online_buffer_size)
 
-    trainer = CQLTrainer(
-        env=eval_env,
-        policy=policy,
-        qf1=qf1,
-        qf2=qf2,
-        target_qf1=target_qf1,
-        target_qf2=target_qf2,
-        **variant['trainer_kwargs']
-    )
+    trainer_kwargs = variant['trainer_kwargs']
+    if trainer_kwargs['min_q_weight'] > 0.:
+        trainer = CQLTrainer(
+            env=eval_env,
+            policy=policy,
+            qf1=qf1,
+            qf2=qf2,
+            target_qf1=target_qf1,
+            target_qf2=target_qf2,
+            **trainer_kwargs
+        )
+    else:
+        cql_trainner_kwargs = ['policy_eval_start', 'num_qs', 'min_q_weight',
+                               'lagrange_thresh', 'num_random', 'temp',
+                               'min_q_version', 'with_lagrange',
+                               'max_q_backup', 'deterministic_backup']
+        [trainer_kwargs.pop(key) for key in cql_trainner_kwargs]
+        trainer = SACTrainer(
+            env=eval_env,
+            policy=policy,
+            qf1=qf1,
+            qf2=qf2,
+            target_qf1=target_qf1,
+            target_qf2=target_qf2,
+            **trainer_kwargs
+        )
+
     algorithm = TorchBatchRLAlgorithm(
         trainer=trainer,
         exploration_env=expl_env,
@@ -143,6 +162,8 @@ if __name__ == "__main__":
     variant['offline_min_q_weight'] = variant['trainer_kwargs']['min_q_weight']
     if args.min_q_weight is not None:
         variant['trainer_kwargs']['min_q_weight'] = args.min_q_weight
+
+    variant['trainer_kwargs']['policy_eval_start'] = 0
 
     variant['seed'] = args.seed
 
