@@ -24,10 +24,10 @@ DEFAULT_PRIOR_BUFFER = ('/media/avi/data/Work/github/avisingh599/minibullet'
 DEFAULT_TASK_BUFFER = ('/media/avi/data/Work/github/avisingh599/minibullet'
                        '/data/oct6_Widow250DrawerGraspNeutral-v0_20K_save_all'
                        '_noise_0.1_2020-10-06T19-37-26_100.npy')
-DEFAULT_CHECKPOINT_DIR = ('/media/avi/data/Work/data/cql-private-checkpoints/'
-                          '10-13-cql-private-chaining-Widow250DoubleDrawerPick'
-                          'PlaceOpenGraspNeutral-v0_2020_10_13_00_25_21_0000--'
-                          's-22995')
+DEFAULT_CHECKPOINT_DIR = '/media/avi/data/Work/data/cql-private-checkpoints' \
+                         '/10-14-cql-private-chaining' \
+                         '-Widow250DoubleDrawerOpenGraspNeutral' \
+                         '-v0_2020_10_14_22_55_08_0000--s-64345'
 NFS_PATH = '/nfs/kun1/users/avi/doodad-output/'
 
 
@@ -44,12 +44,7 @@ def experiment(variant):
     eval_env = roboverse.make(variant['env'], transpose_image=True)
     expl_env = eval_env
 
-    qf1 = checkpoint['trainer/qf1']
-    qf2 = checkpoint['trainer/qf2']
-    target_qf1 = checkpoint['trainer/target_qf1']
-    target_qf2 = checkpoint['trainer/target_qf2']
-
-    policy = checkpoint['trainer/policy']
+    policy = checkpoint['trainer/trainer'].policy
     eval_policy = checkpoint['evaluation/policy']
     eval_path_collector = MdpPathCollector(
         eval_env,
@@ -74,30 +69,29 @@ def experiment(variant):
 
     trainer_kwargs = variant['trainer_kwargs']
     if trainer_kwargs['min_q_weight'] > 0.:
-        trainer = CQLTrainer(
-            env=eval_env,
-            policy=policy,
-            qf1=qf1,
-            qf2=qf2,
-            target_qf1=target_qf1,
-            target_qf2=target_qf2,
-            **trainer_kwargs
-        )
+        trainer = checkpoint['trainer/trainer']
+        trainer.min_q_weight = trainer_kwargs['min_q_weight']
     else:
-        cql_trainner_kwargs = ['policy_eval_start', 'num_qs', 'min_q_weight',
-                               'lagrange_thresh', 'num_random', 'temp',
-                               'min_q_version', 'with_lagrange',
-                               'max_q_backup', 'deterministic_backup']
-        [trainer_kwargs.pop(key) for key in cql_trainner_kwargs]
-        trainer = SACTrainer(
-            env=eval_env,
-            policy=policy,
-            qf1=qf1,
-            qf2=qf2,
-            target_qf1=target_qf1,
-            target_qf2=target_qf2,
-            **trainer_kwargs
-        )
+        # following is WIP
+        raise NotImplementedError
+        # cql_trainner_kwargs = ['policy_eval_start', 'num_qs', 'min_q_weight',
+        #                        'lagrange_thresh', 'num_random', 'temp',
+        #                        'min_q_version', 'with_lagrange',
+        #                        'max_q_backup', 'deterministic_backup']
+        # [trainer_kwargs.pop(key) for key in cql_trainner_kwargs]
+        # qf1 = checkpoint['trainer/qf1']
+        # qf2 = checkpoint['trainer/qf2']
+        # target_qf1 = checkpoint['trainer/target_qf1']
+        # target_qf2 = checkpoint['trainer/target_qf2']
+        # trainer = SACTrainer(
+        #     env=eval_env,
+        #     policy=policy,
+        #     qf1=qf1,
+        #     qf2=qf2,
+        #     target_qf1=target_qf1,
+        #     target_qf2=target_qf2,
+        #     **trainer_kwargs
+        # )
 
     algorithm = TorchBatchRLAlgorithm(
         trainer=trainer,
@@ -128,7 +122,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoint-dir", type=str,
                         default=DEFAULT_CHECKPOINT_DIR)
-    parser.add_argument("--checkpoint-epoch", type=int, default=520)
+    parser.add_argument("--checkpoint-epoch", type=int, default=330)
     parser.add_argument("--gpu", default='0', type=str)
     parser.add_argument("--min-q-weight", default=None, type=float,
                         help="Value of alpha in CQL")
@@ -183,5 +177,5 @@ if __name__ == "__main__":
         variant=variant,
         use_gpu=True,
         snapshot_mode='gap_and_last',
-        snapshot_gap=10,
+        snapshot_gap=25,
     )
