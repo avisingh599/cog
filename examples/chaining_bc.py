@@ -34,10 +34,10 @@ def experiment(variant):
         output_size=1,
         added_fc_input_size=action_dim,
     )
-    qf1 = ConcatCNN(**cnn_params)
-    qf2 = ConcatCNN(**cnn_params)
-    target_qf1 = ConcatCNN(**cnn_params)
-    target_qf2 = ConcatCNN(**cnn_params)
+    # qf1 = ConcatCNN(**cnn_params)
+    # qf2 = ConcatCNN(**cnn_params)
+    # target_qf1 = ConcatCNN(**cnn_params)
+    # target_qf2 = ConcatCNN(**cnn_params)
 
     cnn_params.update(
         output_size=256,
