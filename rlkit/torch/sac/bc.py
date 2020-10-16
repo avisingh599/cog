@@ -119,21 +119,21 @@ class BCTrainer(TorchTrainer):
         else:
             raise NotImplementedError
 
-    def _get_tensor_values(self, obs, actions, network=None):
-        obs_temp, obs_shape, num_repeat = self.preprocess_obs(
-            obs, None, actions)
-        preds = network(obs_temp, actions)
-        preds = preds.view(obs_shape, num_repeat, 1)
-        return preds
+    # def _get_tensor_values(self, obs, actions, network=None):
+    #     obs_temp, obs_shape, num_repeat = self.preprocess_obs(
+    #         obs, None, actions)
+    #     preds = network(obs_temp, actions)
+    #     preds = preds.view(obs_shape, num_repeat, 1)
+    #     return preds
 
-    def _get_policy_actions(self, obs, num_actions, network=None):
-        obs_temp, obs_shape_dim0, _ = self.preprocess_obs(
-            obs, num_actions, None)
-        new_obs_actions, _, _, new_obs_log_pi, *_ = network(
-            obs_temp, reparameterize=True, return_log_prob=True,
-        )
-        return new_obs_actions, new_obs_log_pi.view(
-            obs_shape_dim0, num_actions, 1)
+    # def _get_policy_actions(self, obs, num_actions, network=None):
+    #     obs_temp, obs_shape_dim0, _ = self.preprocess_obs(
+    #         obs, num_actions, None)
+    #     new_obs_actions, _, _, new_obs_log_pi, *_ = network(
+    #         obs_temp, reparameterize=True, return_log_prob=True,
+    #     )
+    #     return new_obs_actions, new_obs_log_pi.view(
+    #         obs_shape_dim0, num_actions, 1)
 
     def filter_dict(self, key_prefix, batch_dict):
         assert isinstance(key_prefix, str)
