@@ -34,6 +34,7 @@ class BCTrainer(TorchTrainer):
 
         self._current_epoch = 0
         self._num_policy_update_steps = 0
+        self.discrete = False
 
     def train_from_torch(self, batch, online=False):
         self._current_epoch += 1
