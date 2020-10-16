@@ -126,6 +126,8 @@ if __name__ == "__main__":
     parser.add_argument("--gpu", default='0', type=str)
     parser.add_argument("--min-q-weight", default=None, type=float,
                         help="Value of alpha in CQL")
+    parser.add_argument("--use-biased-sampling", action="store_true",
+                        default=False)
     parser.add_argument("--online-data-only", action="store_true",
                         default=False)
     parser.add_argument("--seed", default=10, type=int)
@@ -139,6 +141,8 @@ if __name__ == "__main__":
     variant['checkpoint_dir'] = args.checkpoint_dir
     variant['checkpoint_epoch'] = args.checkpoint_epoch
     variant['online_data_only'] = args.online_data_only
+    variant['biased_sampling'] = args.use_biased_sampling
+    assert not (variant['biased_sampling'] and variant['online_data_only'])
 
     variant['algorithm_kwargs']['num_expl_steps_per_train_loop'] = \
         10 * variant['algorithm_kwargs']['max_path_length']

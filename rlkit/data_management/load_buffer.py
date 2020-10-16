@@ -59,11 +59,31 @@ def load_data_from_npy_chaining(variant, expl_env, observation_key,
     buffer_size += get_buffer_size(data_task)
     buffer_size += extra_buffer_size
 
-    replay_buffer = ObsDictReplayBuffer(
-        buffer_size,
-        expl_env,
-        observation_key=observation_key,
-    )
+    # TODO Clean this up
+    if 'biased_sampling' in variant:
+        if variant['biased_sampling']:
+            bias_point = buffer_size - extra_buffer_size
+            print('Setting bias point', bias_point)
+            replay_buffer = ObsDictReplayBuffer(
+                buffer_size,
+                expl_env,
+                observation_key=observation_key,
+                biased_sampling=True,
+                bias_point=bias_point,
+                before_bias_point_probability=0.5,
+            )
+        else:
+            replay_buffer = ObsDictReplayBuffer(
+                buffer_size,
+                expl_env,
+                observation_key=observation_key,
+            )
+    else:
+        replay_buffer = ObsDictReplayBuffer(
+            buffer_size,
+            expl_env,
+            observation_key=observation_key,
+        )
 
     add_data_to_buffer(data_prior, replay_buffer)
     top = replay_buffer._top

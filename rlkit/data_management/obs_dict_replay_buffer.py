@@ -288,6 +288,9 @@ class ObsDictReplayBuffer(ReplayBuffer):
             internal_keys=None,
             observation_key='observation',
             save_data_in_snapshot=False,
+            biased_sampling=False,
+            bias_point=None,
+            before_bias_point_probability=0.5,
     ):
         """
 
@@ -310,6 +313,11 @@ class ObsDictReplayBuffer(ReplayBuffer):
         self.ob_keys_to_save = ob_keys_to_save
         self.observation_key = observation_key
         self.save_data_in_snapshot = save_data_in_snapshot
+
+        # Args for biased sampling from the replay buffer
+        self.biased_sampling = biased_sampling
+        self.bias_point = bias_point
+        self.before_bias_point_probability = before_bias_point_probability
 
         self._action_dim = env.action_space.low.size
         self._actions = np.zeros((max_size, self._action_dim), dtype=np.float32)
@@ -455,7 +463,17 @@ class ObsDictReplayBuffer(ReplayBuffer):
         self._size = min(self._size + path_len, self.max_size)
 
     def _sample_indices(self, batch_size):
-        return np.random.randint(0, self._size, batch_size)
+        if self.biased_sampling:
+            # sample from before the "bias point" with p=before_bias_point_prob
+            assert self.bias_point is not None
+            indices_1 = np.random.randint(0, self.bias_point, batch_size)
+            indices_2 = np.random.randint(self.bias_point, self._size, batch_size)
+            biased_coin_flip = (np.random.uniform(size=batch_size) <
+                                self.before_bias_point_probability) * 1
+            indices = np.where(biased_coin_flip, indices_1, indices_2)
+        else:
+            indices = np.random.randint(0, self._size, batch_size)
+        return indices
 
     def random_batch(self, batch_size):
 
