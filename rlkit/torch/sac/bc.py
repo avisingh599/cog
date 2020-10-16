@@ -38,7 +38,7 @@ class BCTrainer(TorchTrainer):
             # use_target_nets=True,
             # num_qs=2,
 
-            use_robot_state=False,
+            # use_robot_state=False,
             # observation_keys=("observations",),
     ):
         super().__init__()
@@ -85,10 +85,10 @@ class BCTrainer(TorchTrainer):
         # self._use_target_nets = use_target_nets
 
         self._current_epoch = 0
-        self._policy_update_ctr = 0
+        # self._policy_update_ctr = 0
         # self._num_q_update_steps = 0
         self._num_policy_update_steps = 0
-        self._num_policy_steps = 1
+        # self._num_policy_steps = 1
 
         # if not self._use_target_nets:
         #     self.target_qf1 = qf1
@@ -96,8 +96,8 @@ class BCTrainer(TorchTrainer):
 
         # self.num_qs = num_qs
         self.discrete = False
-        self.needs_online_flag = True
-        self.use_robot_state = use_robot_state
+        # self.needs_online_flag = True
+        # self.use_robot_state = use_robot_state
         # self.observation_keys = observation_keys
         # if self.use_robot_state:
             # assert len(self.observation_keys) > 1
@@ -143,11 +143,10 @@ class BCTrainer(TorchTrainer):
     def train_from_torch(self, batch, online=False):
         self._current_epoch += 1
 
-        if self.use_robot_state:
-            obs = self.filter_dict("observations", batch)
-        else:
-            obs = batch['observations']
-
+        # if self.use_robot_state:
+        #     obs = self.filter_dict("observations", batch)
+        # else:
+        obs = batch['observations']
         actions = batch['actions']
 
         """

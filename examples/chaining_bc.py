@@ -73,10 +73,10 @@ def experiment(variant):
     trainer = BCTrainer(
         env=eval_env,
         policy=policy,
-        qf1=qf1,
-        qf2=qf2,
-        target_qf1=target_qf1,
-        target_qf2=target_qf2,
+        # qf1=qf1,
+        # qf2=qf2,
+        # target_qf1=target_qf1,
+        # target_qf2=target_qf2,
         **variant['trainer_kwargs']
     )
     algorithm = TorchBatchRLAlgorithm(
