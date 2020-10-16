@@ -118,14 +118,14 @@ if __name__ == "__main__":
             batch_size=256,
         ),
         trainer_kwargs=dict(
-            discount=0.99,
-            soft_target_tau=5e-3,
+            # discount=0.99,
+            # soft_target_tau=5e-3,
             policy_lr=1E-4,
             # qf_lr=3E-4,
-            reward_scale=1,
+            # reward_scale=1,
             use_automatic_entropy_tuning=True,
 
-            num_qs=2,
+            # num_qs=2,
         ),
         dump_video_kwargs=dict(
             imsize=48,
