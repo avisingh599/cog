@@ -35,23 +35,6 @@ class BCTrainer(TorchTrainer):
         self._current_epoch = 0
         self._num_policy_update_steps = 0
 
-    def preprocess_obs(self, obs, num_repeat, actions):
-        if isinstance(obs, torch.Tensor):
-            obs_shape = obs.shape[0]
-            if num_repeat is None:
-                action_shape = actions.shape[0]
-                num_repeat = int(action_shape / obs_shape)
-            return (obs.unsqueeze(1).repeat(1, num_repeat, 1).view(
-                obs.shape[0] * num_repeat, obs.shape[1]), obs.shape[0], num_repeat)
-        elif isinstance(obs, dict):
-            obs_dict = {}
-            for key in obs.keys():
-                obs_dict[key], obs_shape_dim0, num_repeat = self.preprocess_obs(
-                    obs[key], num_repeat, actions)
-            return obs_dict, obs_shape_dim0, num_repeat
-        else:
-            raise NotImplementedError
-
     def train_from_torch(self, batch, online=False):
         self._current_epoch += 1
 
