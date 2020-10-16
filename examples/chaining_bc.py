@@ -127,27 +127,27 @@ if __name__ == "__main__":
             discount=0.99,
             soft_target_tau=5e-3,
             policy_lr=1E-4,
-            qf_lr=3E-4,
+            # qf_lr=3E-4,
             reward_scale=1,
             use_automatic_entropy_tuning=True,
 
             # Target nets/ policy vs Q-function update
-            policy_eval_start=4 * 10 ** 7,
+            # policy_eval_start=4 * 10 ** 7,
             num_qs=2,
 
             # min Q
-            temp=1.0,
-            min_q_version=3,
-            min_q_weight=5.0,
+            # temp=1.0,
+            # min_q_version=3,
+            # min_q_weight=5.0,
 
             # lagrange
-            with_lagrange=False,  # Defaults to False
-            lagrange_thresh=10.0,
+            # with_lagrange=False,  # Defaults to False
+            # lagrange_thresh=10.0,
 
             # extra params
-            num_random=1,
-            max_q_backup=False,
-            deterministic_backup=False,
+            # num_random=1,
+            # max_q_backup=False,
+            # deterministic_backup=False,
         ),
         dump_video_kwargs=dict(
             imsize=48,
@@ -191,8 +191,8 @@ if __name__ == "__main__":
 
     # variant['trainer_kwargs']['max_q_backup'] = (
     #     True if args.max_q_backup == 'True' else False)
-    variant['trainer_kwargs']['deterministic_backup'] = (
-        True if args.deterministic_backup == 'True' else False)
+    # variant['trainer_kwargs']['deterministic_backup'] = (
+    #     True if args.deterministic_backup == 'True' else False)
     # variant['trainer_kwargs']['min_q_weight'] = args.min_q_weight
     variant['trainer_kwargs']['policy_lr'] = args.policy_lr
     # variant['trainer_kwargs']['min_q_version'] = args.min_q_version
