@@ -109,12 +109,6 @@ if __name__ == "__main__":
         algorithm="weightedBC-corrected",
         version="normal",
         algorithm_kwargs=dict(
-            # num_epochs=100,
-            # num_eval_steps_per_epoch=50,
-            # num_trains_per_train_loop=100,
-            # num_expl_steps_per_train_loop=100,
-            # min_num_steps_before_training=100,
-            # max_path_length=10,
             num_epochs=3000,
             num_eval_steps_per_epoch=300,
             num_trains_per_train_loop=1000,
@@ -131,23 +125,7 @@ if __name__ == "__main__":
             reward_scale=1,
             use_automatic_entropy_tuning=True,
 
-            # Target nets/ policy vs Q-function update
-            # policy_eval_start=4 * 10 ** 7,
             num_qs=2,
-
-            # min Q
-            # temp=1.0,
-            # min_q_version=3,
-            # min_q_weight=5.0,
-
-            # lagrange
-            # with_lagrange=False,  # Defaults to False
-            # lagrange_thresh=10.0,
-
-            # extra params
-            # num_random=1,
-            # max_q_backup=False,
-            # deterministic_backup=False,
         ),
         dump_video_kwargs=dict(
             imsize=48,
@@ -161,20 +139,8 @@ if __name__ == "__main__":
     parser.add_argument("--prior-buffer", type=str, default=DEFAULT_PRIOR_BUFFER)
     parser.add_argument("--task-buffer", type=str, default=DEFAULT_TASK_BUFFER)
     parser.add_argument("--gpu", default='0', type=str)
-    # parser.add_argument("--max-q-backup", type=str,
-    #                     default="False")  # if we want to try max_{a'} backups, set this to true
-    parser.add_argument("--deterministic-backup", type=str,
-                        default="True")  # defaults to true, it does not backup entropy in the Q-function, as per Equation 3
-    # parser.add_argument("--policy-eval-start", default=4 * 10 ** 7,
-    #                     type=int)
-    # parser.add_argument('--min-q-weight', default=1.0,
-    #                     type=float)  # the value of alpha, set to 5.0 or 10.0 if not using lagrange
     parser.add_argument('--policy-lr', default=1e-4,
                         type=float)  # Policy learning rate
-    # parser.add_argument('--min-q-version', default=3,
-    #                     type=int)  # min_q_version = 3 (CQL(H)), version = 2 (CQL(rho))
-    # parser.add_argument('--lagrange-thresh', default=5.0,
-    #                     type=float)  # the value of tau, corresponds to the CQL(lagrange) version
     parser.add_argument('--num-eval-per-epoch', type=int, default=5)
     parser.add_argument("--stoch-eval-policy", action="store_true", default=False)
     parser.add_argument('--seed', default=10, type=int)
@@ -188,16 +154,7 @@ if __name__ == "__main__":
 
     variant['prior_buffer'] = args.prior_buffer
     variant['task_buffer'] = args.task_buffer
-
-    # variant['trainer_kwargs']['max_q_backup'] = (
-    #     True if args.max_q_backup == 'True' else False)
-    # variant['trainer_kwargs']['deterministic_backup'] = (
-    #     True if args.deterministic_backup == 'True' else False)
-    # variant['trainer_kwargs']['min_q_weight'] = args.min_q_weight
     variant['trainer_kwargs']['policy_lr'] = args.policy_lr
-    # variant['trainer_kwargs']['min_q_version'] = args.min_q_version
-    # variant['trainer_kwargs']['policy_eval_start'] = args.policy_eval_start
-    # variant['trainer_kwargs']['lagrange_thresh'] = args.lagrange_thresh
 
     variant['cnn_params'] = dict(
         kernel_sizes=[3, 3, 3],
