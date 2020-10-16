@@ -13,13 +13,6 @@ from rlkit.util.video import VideoSaveFunction
 import argparse, os
 import roboverse
 
-DEFAULT_PRIOR_BUFFER = ('/media/avi/data/Work/github/avisingh599/minibullet'
-                        '/data/oct6_Widow250DrawerGraspNeutral-v0_20K_save_all'
-                        '_noise_0.1_2020-10-06T19-37-26_100.npy')
-DEFAULT_TASK_BUFFER = ('/media/avi/data/Work/github/avisingh599/minibullet'
-                        '/data/oct6_Widow250DrawerGraspNeutral-v0_20K_save_all'
-                        '_noise_0.1_2020-10-06T19-37-26_100.npy')
-
 
 def experiment(variant):
     eval_env = roboverse.make(variant['env'], transpose_image=True)
@@ -34,10 +27,6 @@ def experiment(variant):
         output_size=1,
         added_fc_input_size=action_dim,
     )
-    # qf1 = ConcatCNN(**cnn_params)
-    # qf2 = ConcatCNN(**cnn_params)
-    # target_qf1 = ConcatCNN(**cnn_params)
-    # target_qf2 = ConcatCNN(**cnn_params)
 
     cnn_params.update(
         output_size=256,
@@ -73,10 +62,6 @@ def experiment(variant):
     trainer = BCTrainer(
         env=eval_env,
         policy=policy,
-        # qf1=qf1,
-        # qf2=qf2,
-        # target_qf1=target_qf1,
-        # target_qf2=target_qf2,
         **variant['trainer_kwargs']
     )
     algorithm = TorchBatchRLAlgorithm(
@@ -129,8 +114,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--env", type=str, required=True)
     parser.add_argument("--max-path-length", type=int, required=True)
-    parser.add_argument("--prior-buffer", type=str, default=DEFAULT_PRIOR_BUFFER)
-    parser.add_argument("--task-buffer", type=str, default=DEFAULT_TASK_BUFFER)
+    parser.add_argument("--prior-buffer", required=True)
+    parser.add_argument("--task-buffer", required=True)
     parser.add_argument("--gpu", default='0', type=str)
     parser.add_argument('--policy-lr', default=1e-4,
                         type=float)  # Policy learning rate
