@@ -68,30 +68,9 @@ def experiment(variant):
             extra_buffer_size=online_buffer_size)
 
     trainer_kwargs = variant['trainer_kwargs']
-    if trainer_kwargs['min_q_weight'] > 0.:
-        trainer = checkpoint['trainer/trainer']
-        trainer.min_q_weight = trainer_kwargs['min_q_weight']
-    else:
-        # following is WIP
-        raise NotImplementedError
-        # cql_trainner_kwargs = ['policy_eval_start', 'num_qs', 'min_q_weight',
-        #                        'lagrange_thresh', 'num_random', 'temp',
-        #                        'min_q_version', 'with_lagrange',
-        #                        'max_q_backup', 'deterministic_backup']
-        # [trainer_kwargs.pop(key) for key in cql_trainner_kwargs]
-        # qf1 = checkpoint['trainer/qf1']
-        # qf2 = checkpoint['trainer/qf2']
-        # target_qf1 = checkpoint['trainer/target_qf1']
-        # target_qf2 = checkpoint['trainer/target_qf2']
-        # trainer = SACTrainer(
-        #     env=eval_env,
-        #     policy=policy,
-        #     qf1=qf1,
-        #     qf2=qf2,
-        #     target_qf1=target_qf1,
-        #     target_qf2=target_qf2,
-        #     **trainer_kwargs
-        # )
+    assert trainer_kwargs['min_q_weight'] > 0.
+    trainer = checkpoint['trainer/trainer']
+    trainer.min_q_weight = trainer_kwargs['min_q_weight']
 
     algorithm = TorchBatchRLAlgorithm(
         trainer=trainer,
@@ -150,12 +129,12 @@ if __name__ == "__main__":
         10 * variant['algorithm_kwargs']['max_path_length']
 
     # For testing (should normally be commented)
-    # variant['prior_buffer'] = DEFAULT_PRIOR_BUFFER
-    # variant['task_buffer'] = DEFAULT_TASK_BUFFER
-    # variant['algorithm_kwargs']['num_eval_steps_per_epoch'] = 100
-    # variant['algorithm_kwargs']['num_expl_steps_per_train_loop'] = 100
-    # variant['algorithm_kwargs']['min_num_steps_before_training'] = 100
-    # variant['algorithm_kwargs']['num_trains_per_train_loop'] = 100
+    variant['prior_buffer'] = DEFAULT_PRIOR_BUFFER
+    variant['task_buffer'] = DEFAULT_TASK_BUFFER
+    variant['algorithm_kwargs']['num_eval_steps_per_epoch'] = 100
+    variant['algorithm_kwargs']['num_expl_steps_per_train_loop'] = 100
+    variant['algorithm_kwargs']['min_num_steps_before_training'] = 100
+    variant['algorithm_kwargs']['num_trains_per_train_loop'] = 100
 
     variant['offline_min_q_weight'] = variant['trainer_kwargs']['min_q_weight']
     if args.min_q_weight is not None:
