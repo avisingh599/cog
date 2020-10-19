@@ -5,13 +5,15 @@ from rlkit.samplers.data_collector import MdpPathCollector, \
 
 from rlkit.torch.sac.policies import TanhGaussianPolicy, MakeDeterministic
 from rlkit.torch.sac.bc import BCTrainer
-from rlkit.torch.conv_networks import CNN, ConcatCNN
-from rlkit.launchers.launcher_util import run_experiment
+from rlkit.torch.conv_networks import CNN
 from rlkit.torch.torch_rl_algorithm import TorchBatchRLAlgorithm
 from rlkit.util.video import VideoSaveFunction
+from rlkit.launchers.launcher_util import setup_logger
 
 import argparse, os
 import roboverse
+
+CUSTOM_LOG_DIR = '/nfs/kun1/users/avi/doodad-output/'
 
 
 def experiment(variant):
@@ -83,7 +85,7 @@ def experiment(variant):
 
 
 def enable_gpus(gpu_str):
-    if (gpu_str is not ""):
+    if gpu_str is not "":
         os.environ["CUDA_VISIBLE_DEVICES"] = gpu_str
     return
 
@@ -153,13 +155,11 @@ if __name__ == "__main__":
     ptu.set_gpu_mode(True)
     exp_prefix = 'cql-private-BC-{}'.format(args.env)
 
-    run_experiment(
-        experiment,
-        exp_prefix=exp_prefix,
-        mode='local',
-        variant=variant,
-        use_gpu=True,
-        snapshot_mode='gap_and_last',
-        snapshot_gap=10,
-        seed=args.seed,
-    )
+    if os.path.isdir(CUSTOM_LOG_DIR):
+        base_log_dir = CUSTOM_LOG_DIR
+    else:
+        base_log_dir = None
+
+    setup_logger(exp_prefix, variant=variant, base_log_dir=base_log_dir,
+                 snapshot_mode='gap_and_last', snapshot_gap=10,)
+    experiment(variant)

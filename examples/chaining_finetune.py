@@ -8,11 +8,8 @@ import roboverse
 
 import rlkit.torch.pytorch_util as ptu
 from rlkit.data_management.load_buffer import load_data_from_npy_chaining
-from rlkit.launchers.launcher_util import run_experiment
+from rlkit.launchers.launcher_util import setup_logger
 from rlkit.samplers.data_collector import MdpPathCollector
-from rlkit.torch.sac.cql import CQLTrainer
-from rlkit.torch.sac.sac import SACTrainer
-from rlkit.torch.sac.policies import TanhGaussianPolicy, MakeDeterministic
 from rlkit.torch.torch_rl_algorithm import TorchBatchRLAlgorithm
 from rlkit.util.video import VideoSaveFunction
 from rlkit.data_management.obs_dict_replay_buffer import \
@@ -28,7 +25,7 @@ DEFAULT_CHECKPOINT_DIR = '/media/avi/data/Work/data/cql-private-checkpoints' \
                          '/10-14-cql-private-chaining' \
                          '-Widow250DoubleDrawerOpenGraspNeutral' \
                          '-v0_2020_10_14_22_55_08_0000--s-64345'
-NFS_PATH = '/nfs/kun1/users/avi/doodad-output/'
+CUSTOM_LOG_DIR = '/nfs/kun1/users/avi/doodad-output/'
 
 
 def experiment(variant):
@@ -147,18 +144,11 @@ if __name__ == "__main__":
     ptu.set_gpu_mode(True)
     exp_prefix = 'cql-private-chaining-finetune-{}'.format(variant['env'])
 
-    if os.path.isdir(NFS_PATH):
-        base_log_dir = NFS_PATH
+    if os.path.isdir(CUSTOM_LOG_DIR):
+        base_log_dir = CUSTOM_LOG_DIR
     else:
         base_log_dir = None
 
-    run_experiment(
-        experiment,
-        base_log_dir=base_log_dir,
-        exp_prefix=exp_prefix,
-        mode='local',
-        variant=variant,
-        use_gpu=True,
-        snapshot_mode='gap_and_last',
-        snapshot_gap=25,
-    )
+    setup_logger(exp_prefix, variant=variant, base_log_dir=base_log_dir,
+                 snapshot_mode='gap_and_last', snapshot_gap=10,)
+    experiment(variant)

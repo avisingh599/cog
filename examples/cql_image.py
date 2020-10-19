@@ -6,9 +6,9 @@ from rlkit.samplers.data_collector import MdpPathCollector, \
 from rlkit.torch.sac.policies import TanhGaussianPolicy, MakeDeterministic
 from rlkit.torch.sac.cql import CQLTrainer
 from rlkit.torch.conv_networks import CNN, ConcatCNN
-from rlkit.launchers.launcher_util import run_experiment
 from rlkit.torch.torch_rl_algorithm import TorchBatchRLAlgorithm
 from rlkit.util.video import VideoSaveFunction
+from rlkit.launchers.launcher_util import setup_logger
 
 import argparse, os
 import roboverse
@@ -16,7 +16,7 @@ import roboverse
 DEFAULT_BUFFER = ('/media/avi/data/Work/github/avisingh599/minibullet/data/'
                   'oct6_Widow250DrawerGraspNeutral-v0_20K_save_all_noise_0.1'
                   '_2020-10-06T19-37-26_100.npy')
-NFS_PATH = '/nfs/kun1/users/avi/doodad-output/'
+CUSTOM_LOG_DIR = '/nfs/kun1/users/avi/doodad-output/'
 
 
 def experiment(variant):
@@ -207,18 +207,11 @@ if __name__ == "__main__":
     ptu.set_gpu_mode(True)
     exp_prefix = 'cql-private-{}'.format(args.env)
 
-    if os.path.isdir(NFS_PATH):
-        base_log_dir = NFS_PATH
+    if os.path.isdir(CUSTOM_LOG_DIR):
+        base_log_dir = CUSTOM_LOG_DIR
     else:
         base_log_dir = None
 
-    run_experiment(
-        experiment,
-        base_log_dir=base_log_dir,
-        exp_prefix=exp_prefix,
-        mode='local',
-        variant=variant,
-        use_gpu=True,
-        snapshot_mode='gap_and_last',
-        snapshot_gap=10,
-    )
+    setup_logger(exp_prefix, variant=variant, base_log_dir=base_log_dir,
+                 snapshot_mode='gap_and_last', snapshot_gap=10,)
+    experiment(variant)
