@@ -101,6 +101,7 @@ def enable_gpus(gpu_str):
 if __name__ == "__main__":
     # noinspection PyTypeChecker
     parser = argparse.ArgumentParser()
+    parser.add_argument("--env", type=str, required=True)
     parser.add_argument("--checkpoint-dir", type=str,
                         default=DEFAULT_CHECKPOINT_DIR)
     parser.add_argument("--checkpoint-epoch", type=int, default=200)
@@ -142,6 +143,7 @@ if __name__ == "__main__":
     )
 
     enable_gpus(args.gpu)
+    variant['env'] = args.env
     variant['checkpoint_dir'] = args.checkpoint_dir
     variant['checkpoint_epoch'] = args.checkpoint_epoch
     variant['buffer'] = args.buffer
