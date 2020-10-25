@@ -93,7 +93,7 @@ def enable_gpus(gpu_str):
 if __name__ == "__main__":
     # noinspection PyTypeChecker
     variant = dict(
-        algorithm="weightedBC-corrected",
+        algorithm="BC",
         version="normal",
         algorithm_kwargs=dict(
             num_epochs=3000,
