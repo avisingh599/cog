@@ -14,6 +14,12 @@ import argparse, os
 import roboverse
 
 CUSTOM_LOG_DIR = '/nfs/kun1/users/avi/doodad-output/'
+DEFAULT_PRIOR_BUFFER = ('/media/avi/data/Work/github/avisingh599/minibullet'
+                        '/data/oct6_Widow250DrawerGraspNeutral-v0_20K_save_all'
+                        '_noise_0.1_2020-10-06T19-37-26_100.npy')
+DEFAULT_TASK_BUFFER = ('/media/avi/data/Work/github/avisingh599/minibullet'
+                        '/data/oct6_Widow250DrawerGraspNeutral-v0_20K_save_all'
+                       '_noise_0.1_2020-10-06T19-37-26_100.npy')
 
 
 def experiment(variant):
@@ -116,13 +122,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--env", type=str, required=True)
     parser.add_argument("--max-path-length", type=int, required=True)
-    parser.add_argument("--prior-buffer", required=True)
-    parser.add_argument("--task-buffer", required=True)
+    parser.add_argument("--prior-buffer", type=str, default=DEFAULT_PRIOR_BUFFER)
+    parser.add_argument("--task-buffer", type=str, default=DEFAULT_TASK_BUFFER)
     parser.add_argument("--gpu", default='0', type=str)
     parser.add_argument('--policy-lr', default=1e-4,
                         type=float)  # Policy learning rate
     parser.add_argument('--num-eval-per-epoch', type=int, default=5)
-    parser.add_argument("--stoch-eval-policy", action="store_true", default=False)
+    parser.add_argument("--deterministic-eval-policy", action="store_true",
+                        default=False)
     parser.add_argument('--seed', default=10, type=int)
 
     args = parser.parse_args()
@@ -150,10 +157,10 @@ if __name__ == "__main__":
         image_augmentation_padding=4,
     )
 
-    variant['stoch_eval_policy'] = args.stoch_eval_policy
+    variant['stoch_eval_policy'] = not args.deterministic_eval_policy
     variant['seed'] = args.seed
     ptu.set_gpu_mode(True)
-    exp_prefix = 'cql-private-BC-{}'.format(args.env)
+    exp_prefix = 'cql-BC-{}'.format(args.env)
 
     if os.path.isdir(CUSTOM_LOG_DIR):
         base_log_dir = CUSTOM_LOG_DIR

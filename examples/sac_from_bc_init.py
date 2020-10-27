@@ -156,7 +156,7 @@ if __name__ == "__main__":
 
     variant['seed'] = args.seed
     ptu.set_gpu_mode(True)
-    exp_prefix = 'cql-private-sac-from-bc-finetune-{}'.format(variant['env'])
+    exp_prefix = 'sac-from-bc-finetune-{}'.format(variant['env'])
 
     if os.path.isdir(CUSTOM_LOG_DIR):
         base_log_dir = CUSTOM_LOG_DIR
