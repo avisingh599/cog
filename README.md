@@ -9,7 +9,7 @@ Avi Singh, Albert Yu, Jonathan Yang, Jesse Zhang, Aviral Kumar, Sergey Levine <b
 
 | Open drawer, take object out      |   Close top drawer, take object out | Remove obstacle, take object out | 
 :-------------------------:|:-------------------------:|:-------------------------:
-![](https://lh6.googleusercontent.com/DpqLrbyEZ4AWwTHlLQNJJUiwd9JzMDQVChd4tB4MTpSGmV35ygfXd7YVQHAlLel2GDsJ-O0=w1280) | ![](https://lh5.googleusercontent.com/GNF7PKJP7DaA__VBxQxkqi0TV5poFVA48ijvMfT4n2sXEQlKnJtVj90DxjLQAQM9xAU795hR=w1280) | ![](https://lh3.googleusercontent.com/x268zzRNzPBijYdy7E9DyYTiGr0olg9MZr8B0YzKHCDrHPCll8ISU-hUx_NOCDG9V0isGiwD=w1280) |
+![](https://i.imgur.com/SczIcrw.gif) | ![](https://i.imgur.com/SczIcrw.gif) | ![](https://i.imgur.com/SczIcrw.gif) |
 
 In this paper, we propose an approach to incorporate a large amount of prior 
 data, either from previously solved tasks or from unsupervised or undirected
