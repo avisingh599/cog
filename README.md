@@ -5,7 +5,7 @@ This repository accompanies the following paper:
 **COG: Connecting New Skills to Past Experience with Offline Reinforcement Learning** <br/>
 Avi Singh, Albert Yu, Jonathan Yang, Jesse Zhang, Aviral Kumar, Sergey Levine <br/>
 [Conference on Robot Learning](https://www.robot-learning.org/), 2020 <br/>
-[Website](https://sites.google.com/view/cog-rl) | Arxiv (coming soon) | Video (coming soon)
+[Website](https://sites.google.com/view/cog-rl) | [Arxiv](https://arxiv.org/abs/2010.14500) | [Video](https://www.youtube.com/watch?v=6sb31PtpI_s)
 
 | Open drawer, take object out      |   Close top drawer, take object out | Remove obstacle, take object out | 
 :-------------------------:|:-------------------------:|:-------------------------:
